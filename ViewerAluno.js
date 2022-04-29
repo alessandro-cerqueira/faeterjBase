@@ -215,7 +215,7 @@ function fnBtOk() {
   this.viewer.getCtrl().efetivar(matricula, cpf, nome, email, telefone); 
 
   // if(this.viewer.getCtrl().getStatus() == Status.INCLUINDO) {
-  //  this.viewer.getCtrl().fnEfetivar(matricula, cpf, nome, email, telefone); 
+  //  this.viewer.getCtrl().i(matricula, cpf, nome, email, telefone); 
   //} else if(this.viewer.getCtrl().getStatus() == Status.ALTERANDO) {
   //  this.viewer.getCtrl().alterar(matricula, cpf, nome, email, telefone); 
   //} else if(this.viewer.getCtrl().getStatus() == Status.EXCLUINDO) {

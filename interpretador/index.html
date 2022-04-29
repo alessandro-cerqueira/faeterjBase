@@ -1,0 +1,168 @@
+<script>
+  
+  
+  const precedencia = ",=+%-*/";  
+  const regExpOps = /([\+\-\%\/\*\=\,])/;  
+
+  const operadores = /[^\d()]+|[\d.]+/g;
+  const numeros = /^[+-]?\d+(\.\d+)?$/;
+  const espacoEmBranco = / /g;
+  
+  
+  var executarOperador = { 
+                  "+" : soma,
+                  "-" : subtracao,
+                  "*" : multiplicacao,
+                  "/" : divisao,
+                  "%" : modulo,
+                  "=" : atribuicao,
+                  "," : separador,
+               };
+  
+  var listaVariaveis = {};
+  
+  function verificarOps(op1,op2) {
+    if(typeof op1 != 'number') 
+      throw new Error("Erro Sintático #3: "+ op1);
+    if(typeof op2 != 'number') 
+      throw new Error("Erro Sintático #4: "+ op2);
+  }
+  
+  function soma(op1,op2) {
+    verificarOps(op1,op2);
+    return op1 + op2;
+  }
+    
+  function subtracao(op1,op2) {
+    verificarOps(op1,op2);
+    return op1 - op2;
+  }
+
+  function multiplicacao(op1,op2) {
+    verificarOps(op1,op2);
+    return op1 * op2;
+  }
+  
+  function divisao(op1,op2) {
+    verificarOps(op1,op2);
+    return op1 / op2;
+  }
+
+  function modulo(op1,op2) {
+    verificarOps(op1,op2);
+    return op1 % op2;
+  }
+
+  function atribuicao(op1,op2) {
+    listaVariaveis[op1] = op2;
+    return op2;
+  }
+
+  function separador(op1,op2) {
+    if(op1 === null || op1 === undefined || op2 === null || op2 === undefined)
+      throw new Error("Erro Sintático #6: Uso indevido da vírgula");
+    return op1;
+  }
+
+  //----------------------------------------------------------//
+  
+  function geraTokens(instrucao) {    
+    // Retira os espaços em branco
+    instrucao = instrucao.replace(/\s+/g, '');    
+    let tokens = instrucao.split(regExpOps);
+    for(let i = 0; i < tokens.length; i++) {
+      if(tokens[i] == "") {
+        tokens.splice(i,1);
+        continue;
+      }
+      let valor = tokens[i].match(numeros);
+      if(valor != undefined && valor != null) 
+        tokens[i] = parseFloat(tokens[i], 10);      
+    }
+    return tokens;
+  }
+  
+  //----------------------------------------------------------//
+
+  function executar(tokens) {
+    // Se o array de tokens só tiver um único elemento,
+    // esse representa o resultado.
+    if(tokens.length == 1) {
+      if(typeof tokens[0] != 'number')  
+        throw new Error("Erro Sintático #1");        
+      return tokens[0];
+    }
+      
+    // Esta variável indicará a posição do operador com maior precedência.
+    // Ao final, a variável posOpMaiorPrecedencia indicará a posição do 
+    // operador com maior precedência.
+    let posOpMaiorPrecedencia = -1;
+    
+    // Vou percorrer os tokens e descobrir qual é o operador com maior precedência
+    for(i = 0; i < tokens.length; i++) {
+      // Se o token não é string, é porque representa uma literal numérica
+      if(typeof tokens[i] != 'string')
+        continue;
+      // Se o token é uma string, então é um operador.
+      let tokenAtual = tokens[i].match(regExpOps);
+      // Se é um operador
+      if(tokenAtual != null) {
+        // Se ainda não defini o operador com maior precedência
+        if(posOpMaiorPrecedencia == -1) {
+          // Guardo a posição do operador
+          posOpMaiorPrecedencia = i;
+        }
+        else {
+          if(precedencia.indexOf(tokens[i]) > precedencia.indexOf(tokens[posOpMaiorPrecedencia])) {
+            posOpMaiorPrecedencia = i;
+          }          
+        }          
+      } 
+      // Verifico se é uma variável 
+      else {
+        tokenAtual = tokens[i];
+        if(listaVariaveis[tokenAtual] != undefined)
+          tokens[i] = listaVariaveis[tokenAtual];
+      }
+    }
+        
+    // Se não encontrei um operador, erro sintático
+    if(posOpMaiorPrecedencia < 0 || posOpMaiorPrecedencia == tokens.length - 1)
+      throw new Error("Erro Sintático #2");
+
+    // Pego o operador com maior precedência
+    let operador = tokens[posOpMaiorPrecedencia];
+    let operando1 = tokens[posOpMaiorPrecedencia-1];
+    let operando2 = tokens[posOpMaiorPrecedencia+1];
+
+
+    tokens[posOpMaiorPrecedencia] = executarOperador[operador](operando1, operando2);
+
+    // Retiro os operandos da expressão
+    tokens.splice(posOpMaiorPrecedencia-1,1);
+    tokens.splice(posOpMaiorPrecedencia,1);
+  
+
+    // Solicito que volte a processar a expressão.
+    return executar(tokens);
+  }
+  
+  //----------------------------------------------------------//
+  
+  var declaracaoVariaveis = "i = 10, j = 18"
+  var instrucao = ",2";
+  
+  //var tokens = geraTokens(declaracaoVariaveis);
+  //executar(tokens);
+  
+  var tokens = geraTokens(instrucao);
+  
+  try {
+    alert("A expressão " + instrucao + " é igual a " + executar(tokens));
+    alert(valor);
+  }
+  catch(e) {
+    alert(e);
+  }
+  
+</script>
